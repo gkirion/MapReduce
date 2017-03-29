@@ -1,0 +1,14 @@
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/PopularKeywords.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/WikipediaSort.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/LetterCount.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/PerDaySearches.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/FindDupes.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/WikipediaHistogramFull.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/PopularPages.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/MapReduceDriver.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/MapReduceJoin.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/SearchHits.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/PerWeekSearches.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/WikipediaHistogramApprox.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/Twitter.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/SearchAnalytics.java

@@ -1,0 +1,4 @@
+com/george/hadoop/LetterCount.class
+com/george/hadoop/MapReduceDriver.class
+com/george/hadoop/LetterCount$TokenizerMapper.class
+com/george/hadoop/LetterCount$IntSumReducer.class
