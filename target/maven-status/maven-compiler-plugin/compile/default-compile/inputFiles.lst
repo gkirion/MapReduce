@@ -1,5 +1,6 @@
 /home/george/workspace/mapreduce/src/main/java/com/george/hadoop/PopularKeywords.java
 /home/george/workspace/mapreduce/src/main/java/com/george/hadoop/WikipediaSort.java
+/home/george/workspace/mapreduce/src/main/java/com/george/hadoop/SearchInWikipedia.java
 /home/george/workspace/mapreduce/src/main/java/com/george/hadoop/LetterCount.java
 /home/george/workspace/mapreduce/src/main/java/com/george/hadoop/PerDaySearches.java
 /home/george/workspace/mapreduce/src/main/java/com/george/hadoop/FindDupes.java

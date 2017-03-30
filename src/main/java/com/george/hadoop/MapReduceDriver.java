@@ -8,6 +8,7 @@ public class MapReduceDriver {
 	    int exitCode = -1;
 	    ProgramDriver pgd = new ProgramDriver();
 	    try {
+	    	pgd.addClass("searchinwikipedia", SearchInWikipedia.class, "searchinwikipedia");
 	    	pgd.addClass("wikipediasort", WikipediaSort.class, "wikipedia sort");
 	    	pgd.addClass("wikipediahistogramapprox", WikipediaHistogramApprox.class, "wikipedia histogram approx");
 	    	pgd.addClass("wikipediahistogramfull", WikipediaHistogramFull.class, "wikipedia histogram full");
