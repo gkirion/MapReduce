@@ -9,13 +9,10 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-import com.george.hadoop.SearchAnalytics.IntSumReducer;
-import com.george.hadoop.SearchAnalytics.TokenizerMapper;
 
 public class PerWeekSearches {
 	
@@ -27,11 +24,8 @@ public class PerWeekSearches {
 			String[] lines = value.toString().split("\n"); // split text into lines
 			for (String line : lines) { // for each line
 				String[] tokens = line.split("\t"); // split each line into words, use tab as delimiter
-				String userID = tokens[0];
-				String search = tokens[1];
 				String datetime = tokens[2];
 				String date = datetime.split(" ")[0];
-				String time = datetime.split(" ")[1];
 				String year = date.split("-")[0];
 				String month = date.split("-")[1];
 				int day = Integer.parseInt(date.split("-")[2]);

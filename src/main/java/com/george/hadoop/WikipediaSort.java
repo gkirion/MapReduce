@@ -1,21 +1,12 @@
 package com.george.hadoop;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringReader;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.io.SequenceFile.Reader;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapred.lib.InputSampler;
@@ -24,18 +15,9 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Reducer.Context;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileRecordReader;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.util.GenericOptionsParser;
-import org.apache.hadoop.util.ReflectionUtils;
 
-import com.george.hadoop.WikipediaHistogramFull.IntSumReducer;
-import com.george.hadoop.WikipediaHistogramFull.TokenizerMapper;
-import com.google.common.base.Charsets;
 
 public class WikipediaSort {
 
@@ -139,7 +121,7 @@ public class WikipediaSort {
 	    sortJob.setInputFormatClass(SequenceFileInputFormat.class);
 	    SequenceFileInputFormat.setInputPaths(sortJob, new Path(args[1] + "-map"));
 	    TextOutputFormat.setOutputPath(sortJob, new Path(args[1]));
-	    //sortJob.setMapperClass(Mapper.class);
+	    //sortJob.setMapperClass(WordMapper.class);
 	    sortJob.setReducerClass(WordReducer.class);
 	    sortJob.setMapOutputKeyClass(Text.class);
 	    sortJob.setMapOutputValueClass(Text.class);

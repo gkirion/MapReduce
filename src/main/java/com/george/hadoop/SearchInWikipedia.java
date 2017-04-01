@@ -29,7 +29,7 @@ import com.google.common.base.Charsets;
 
 public class SearchInWikipedia {
 
-	public static class SearchMapper extends Mapper<LongWritable, Text, Text, LongWritable> {
+	public static class SearchTokenizerMapper extends Mapper<LongWritable, Text, Text, LongWritable> {
 		//private final static IntWritable one = new IntWritable(1);
 		private Text word = new Text();
 		
@@ -44,15 +44,13 @@ public class SearchInWikipedia {
 					word.set(term);
 					context.write(word, key);
 				}
-				word.set("TOTAL");
-				context.write(word, key);
 			}
 		}
 	}
 	
-	public static class WikipediaMapper extends Mapper<Object, Text, Text, LongWritable> {
-		private final static LongWritable out = new LongWritable(-1);
+	public static class WikipediaTokenizerMapper extends Mapper<Object, Text, Text, LongWritable> {
 		private Text word = new Text();
+		private final static LongWritable minusOne = new LongWritable(-1);
 		
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 			String[] lines = value.toString().split("\n"); // split text into lines
@@ -61,26 +59,27 @@ public class SearchInWikipedia {
 				for (String token : tokens) {
 					token = token.toLowerCase();
 					word.set(token);
-					context.write(word, out);
+					context.write(word, minusOne);
 				}
 			}
 		}
 	}
 	
 	public static class StopwordsTokenizerMapper extends Mapper<Object, Text, Text, LongWritable> {
-		private final static LongWritable out = new LongWritable(-2);
 		private Text keyword = new Text();
+		private final static LongWritable minusTwo = new LongWritable(-2);
 		
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 			String[] lines = value.toString().split("\n"); // split text into lines
 			for (String line : lines) { // for each line
+				line = line.toLowerCase();
 				keyword.set(line);
-				context.write(keyword, out);
+				context.write(keyword, minusTwo);
 			}
 		}
 	}
 	
-	public static class IntSumReducer extends Reducer<Text, LongWritable, Text, LongWritable> {
+	public static class SearchWikipediaJoinReducer extends Reducer<Text, LongWritable, Text, LongWritable> {
 		private Text word = new Text();
 		private LongWritable out = new LongWritable();
 		
@@ -88,7 +87,7 @@ public class SearchInWikipedia {
 			ArrayList<Long> list = new ArrayList<Long>();
 			boolean wikipediaHasIt = false;
 			for (LongWritable val : values) {
-				if (val.get() == -2) { // if is include in stopwords, ignore it
+				if (val.get() == -2) { // if is included in stopwords, ignore it
 					return;
 				}
 				else if (val.get() == -1) { // if exists in wikipedia
@@ -105,13 +104,11 @@ public class SearchInWikipedia {
 					context.write(word, out);
 				}	
 			}
-			else if (key.toString().equals("TOTAL")) {
-				for (Long val : list) { 
-					out.set(val);
-					context.write(key, out);
-				}	
+			word.set("total");
+			for (Long val : list) { 
+				out.set(val);
+				context.write(word, out);
 			}
-			
 		}
 	}
 	
@@ -130,7 +127,7 @@ public class SearchInWikipedia {
 		}
 	}
 	
-	public static class IntSumReducer_2 extends Reducer<Text, LongWritable, Text, LongWritable> {
+	public static class HitsAndTotalReducer extends Reducer<Text, LongWritable, Text, LongWritable> {
 		private LongWritable result = new LongWritable();
 		
 		public void reduce(Text key, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException {
@@ -165,7 +162,7 @@ public class SearchInWikipedia {
 			int miss = 0, hit = 0, total = 0;
 			while (line != null) {
 				String[] tokens = line.split("\t");
-				if (tokens[0].equals("TOTAL")) {
+				if (tokens[0].equals("total")) {
 					total = Integer.parseInt(tokens[1]);
 				}
 				else {
@@ -177,8 +174,8 @@ public class SearchInWikipedia {
 			br.close();
 			Path outputPath = new Path(path, "part-r-00001");
 			PrintWriter printWriter = new PrintWriter(fileSystem.create(outputPath));
-			printWriter.println("hit" + "\t" + hit + "\t" + Math.round((hit / (double)total) * 100) + "%");
-			printWriter.println("miss" + "\t" + miss + "\t" + Math.round((miss / (double)total) * 100) + "%");
+			printWriter.println("hit" + "\t" + hit + "\t" + Math.round((hit / (double)total) * 10000) / 100.0 + "%");
+			printWriter.println("miss" + "\t" + miss + "\t" + Math.round((miss / (double)total) * 10000) / 100.0 + "%");
 			printWriter.close();
 			
 		} catch (IOException e) {
@@ -191,21 +188,21 @@ public class SearchInWikipedia {
 		Configuration conf = new Configuration();
 		String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
 	    if (otherArgs.length < 2) {
-	      System.err.println("Usage: searchinwikipedia <search file> <wikipedia file> <out>");
+	      System.err.println("Usage: searchinwikipedia <search file> <wikipedia file> <stopwords file> <out>");
 	      System.exit(2);
 	    }
 	    
-	    Job job = new Job(conf, "search in wikipedia");
+	    Job job = Job.getInstance(conf, "search in wikipedia");
 	    job.setJarByClass(SearchInWikipedia.class);
-	    job.setMapperClass(SearchMapper.class);
+	    job.setMapperClass(SearchTokenizerMapper.class);
 	    //job.setCombinerClass(IntSumReducer.class);
-	    job.setReducerClass(IntSumReducer.class);
+	    job.setReducerClass(SearchWikipediaJoinReducer.class);
 	    job.setOutputKeyClass(Text.class);
 	    job.setOutputValueClass(LongWritable.class);
 	    job.setMapOutputKeyClass(Text.class);
 	    job.setMapOutputValueClass(LongWritable.class);
-	    MultipleInputs.addInputPath(job, new Path(otherArgs[0]), TextInputFormat.class, SearchMapper.class);
-	    MultipleInputs.addInputPath(job, new Path(otherArgs[1]), TextInputFormat.class, WikipediaMapper.class);
+	    MultipleInputs.addInputPath(job, new Path(otherArgs[0]), TextInputFormat.class, SearchTokenizerMapper.class);
+	    MultipleInputs.addInputPath(job, new Path(otherArgs[1]), TextInputFormat.class, WikipediaTokenizerMapper.class);
 	    MultipleInputs.addInputPath(job, new Path(otherArgs[2]), TextInputFormat.class, StopwordsTokenizerMapper.class);
 	    FileOutputFormat.setOutputPath(job, new Path(otherArgs[otherArgs.length - 1]));
 	    int returnCode = job.waitForCompletion(true) ? 0 : 1;
@@ -215,7 +212,7 @@ public class SearchInWikipedia {
 	    job_2.setJarByClass(SearchInWikipedia.class);
 	    job_2.setMapperClass(WordMapper.class);
 	    //job_2.setCombinerClass(IntSumReducer_2.class);
-	    job_2.setReducerClass(IntSumReducer_2.class);	    
+	    job_2.setReducerClass(HitsAndTotalReducer.class);	    
 	    job_2.setOutputKeyClass(Text.class);
 	    job_2.setOutputValueClass(LongWritable.class);
 	    job_2.setMapOutputKeyClass(Text.class);

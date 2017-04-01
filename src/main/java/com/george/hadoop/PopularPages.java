@@ -11,15 +11,10 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-import com.george.hadoop.SearchAnalytics.IntSumReducer;
-import com.george.hadoop.SearchAnalytics.TokenizerMapper;
-import com.sun.tools.corba.se.idl.toJavaPortable.Util;
-import com.sun.tools.javac.code.Attribute.Array;
 
 public class PopularPages {
 
@@ -82,6 +77,8 @@ public class PopularPages {
 	    job.setMapperClass(TokenizerMapper.class);
 	    //job.setCombinerClass(IntSumReducer.class);
 	    job.setReducerClass(IntSumReducer.class);
+	    job.setMapOutputKeyClass(Text.class);
+	    job.setMapOutputValueClass(Text.class);
 	    job.setOutputKeyClass(Text.class);
 	    job.setOutputValueClass(IntWritable.class);
 	    for (int i = 0; i < otherArgs.length - 1; ++i) {

@@ -6,20 +6,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.LongWritable.DecreasingComparator;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-import com.george.hadoop.SearchAnalytics.IntSumReducer;
-import com.george.hadoop.SearchAnalytics.TokenizerMapper;
 
 public class PopularKeywords {
 	
@@ -30,6 +26,7 @@ public class PopularKeywords {
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 			String[] lines = value.toString().split("\n"); // split text into lines
 			for (String line : lines) { // for each line
+				line = line.toLowerCase();
 				String[] tokens = line.split("\t"); // split each line into words, use tab as delimiter
 				String search = tokens[1];
 				String[] terms = search.split(" "); // split search terms 
@@ -48,6 +45,7 @@ public class PopularKeywords {
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
 			String[] lines = value.toString().split("\n"); // split text into lines
 			for (String line : lines) { // for each line
+				line = line.toLowerCase();
 				keyword.set(line);
 				context.write(keyword, zero);
 			}
@@ -104,7 +102,7 @@ public class PopularKeywords {
 		Configuration conf = new Configuration();
 		String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
 	    if (otherArgs.length < 2) {
-	      System.err.println("Usage: popularkeywords <in> [<in>...] <out>");
+	      System.err.println("Usage: popularkeywords <in> <stopwords> <out>");
 	      System.exit(2);
 	    }
 	    Job job = new Job(conf, "popular keywords");
@@ -116,7 +114,6 @@ public class PopularKeywords {
 	    job.setOutputValueClass(IntWritable.class);
 	    job.setMapOutputKeyClass(Text.class);
 	    job.setMapOutputValueClass(IntWritable.class);
-
 	    job.setOutputValueClass(Text.class);
 	    MultipleInputs.addInputPath(job, new Path(otherArgs[0]), TextInputFormat.class, TokenizerMapper.class);
 	    MultipleInputs.addInputPath(job, new Path(otherArgs[1]), TextInputFormat.class, StopwordsTokenizerMapper.class);
@@ -128,15 +125,12 @@ public class PopularKeywords {
 	    job_2.setMapperClass(TokenizerMapper_2.class);
 	    //job_2.setCombinerClass(IntSumReducer_2.class);
 	    job_2.setReducerClass(IntSumReducer_2.class);
-	    
 	    job_2.setSortComparatorClass(LongWritable.DecreasingComparator.class);
-	    
 	    job_2.setOutputKeyClass(Text.class);
 	    job_2.setOutputValueClass(LongWritable.class);
 	    
 	    job_2.setMapOutputKeyClass(LongWritable.class);
 	    job_2.setMapOutputValueClass(Text.class);
-	    
         FileInputFormat.addInputPath(job_2, new Path(otherArgs[2]));
 	    FileOutputFormat.setOutputPath(job_2, new Path(otherArgs[otherArgs.length - 1], "second_job"));
 	    System.out.println(new Path(otherArgs[1], "part-r-00000").toString());

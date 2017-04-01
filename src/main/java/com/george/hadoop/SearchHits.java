@@ -12,13 +12,10 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-import com.george.hadoop.SearchAnalytics.IntSumReducer;
-import com.george.hadoop.SearchAnalytics.TokenizerMapper;
 import com.google.common.base.Charsets;
 
 public class SearchHits {
@@ -31,28 +28,15 @@ public class SearchHits {
 			String[] lines = value.toString().split("\n"); // split text into lines
 			for (String line : lines) { // for each line
 				String[] tokens = line.split("\t"); // split each line into words, use tab as delimiter
-				String userID = tokens[0];
-				String search = tokens[1];
-				String datetime = tokens[2];
-				String date = datetime.split(" ")[0];
-				String time = datetime.split(" ")[1];
-				String rank = null;
-				String url = null;
-				if (tokens.length == 5) {
-					rank = tokens[3];
-					url = tokens[4];
-				}
 				if (tokens.length == 5) {
 					word.set("hit");
-					context.write(word, one);
 				}
 				else {
 					word.set("miss");
-					context.write(word, one);
 				}
+				context.write(word, one);
 				word.set("total");
 				context.write(word, one);
-				
 			}
 		}
 		
@@ -80,7 +64,8 @@ public class SearchHits {
 		}
 		BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(file), Charsets.UTF_8));
 		String line;
-		int hits = 0, misses = 0, tots = 0;
+		int hits = 0, misses = 0;
+		double tots = 0;
 		line = br.readLine();
 		while (line != null) { // while line is not empty
 			String[] tokens = line.split("\t");
@@ -95,8 +80,8 @@ public class SearchHits {
 			}
 			line = br.readLine();
 		}
-		System.out.printf("hit:\t%f\n", (double)hits / tots);
-		System.out.printf("miss:\t%f\n", (double)misses / tots);
+		System.out.println("hit:\t" + Math.round((hits / tots) * 10000) / 100.0 + "%");
+		System.out.println("miss:\t" + Math.round((misses / tots) * 10000) / 100.0 + "%");
 	}
 	
 	public static void main(String[] args) throws Exception {
