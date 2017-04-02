@@ -126,7 +126,7 @@ public class WikipediaSort {
 	    sortJob.setMapOutputKeyClass(Text.class);
 	    sortJob.setMapOutputValueClass(Text.class);
 	    TotalOrderPartitioner.setPartitionFile(sortJob.getConfiguration(), new Path(args[1] + "-part.lst"));
-	    InputSampler.Sampler sampler = new InputSampler.RandomSampler(1, 10, 9);
+	    InputSampler.Sampler sampler = new InputSampler.RandomSampler(1, 1000, 9);
 	    InputSampler.writePartitionFile(sortJob, sampler);
 	    sortJob.setPartitionerClass(TotalOrderPartitioner.class);
 	    ret = sortJob.waitForCompletion(true) ? 0 : 1;
